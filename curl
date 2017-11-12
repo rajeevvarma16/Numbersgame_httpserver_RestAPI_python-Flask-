@@ -1,0 +1,12 @@
+
+#Post range:
+curl -i -H "Content-Type: application/json" -X POST -d '{"minimum":23,"maximum":27,"correct":24}' http://localhost:5000/range
+# Get Range:
+curl -i http://localhost:5000/range
+
+
+To get guess_history:
+curl -i http://localhost:5000/guesses
+
+To post guesses:
+curl -i -H "Content-Type: application/json" -X POST -d '{"guess": 24}' http://localhost:5000/guesses
