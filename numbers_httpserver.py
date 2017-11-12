@@ -26,7 +26,6 @@ def get_range():
 @app.route('/range', methods=['POST'])
 def post_range():
     global range, guesses
-    guesses = []
     try:
         minimum = request.get_json()['minimum']
         maximum = request.get_json()['maximum']
@@ -37,6 +36,7 @@ def post_range():
         abort(400)
     if minimum >= maximum or correct < minimum or correct > maximum:
         abort(400)
+    guesses = []
     range = {'minimum': minimum, 'maximum': maximum, 'correct': correct}
     return jsonify(range), 201
 
