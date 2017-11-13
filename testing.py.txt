@@ -1,0 +1,78 @@
+from flask import json
+import numbers_httpserver
+import pytest
+
+
+@pytest.fixture
+def client(request):
+    client = numbers_httpserver.app.test_client()
+    return client
+
+def test_set_incorrect_range(client):
+
+    data = {'minimum': 1, 'maximum': 5, 'correct': 6}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 5,}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 2, 'correct': 3}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 0, 'correct': 1}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 3, 'correct': 0}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 1, 'correct': 2}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 1, 'correct': 'hello'}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 1, 'maximum': 'hello', 'correct': '3'}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+    data = {'minimum': 'hello', 'maximum': 5, 'correct': 3}
+    rv = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    assert rv.status_code == 400
+    assert json.loads(rv.data) == {'error': 'Bad Request'}
+
+def test_set_invalid_guesses(client):
+    # guess without setting the range
+    guess = {'guess': 9}
+    posted_guess = client.post('/guesses', content_type = 'application/json', data = json.dumps(guess))
+    assert posted_guess.status_code == 400
+    assert json.loads(posted_guess.data) == {'error': 'Bad Request'}
+
+def test_get_incorrect_range(client):
+    data = {'minimum': 1, 'maximum': 4, 'correct': 0}
+    client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    response = client.get('/range')
+    assert response.status_code == 404
+    assert json.loads(response.data) == {'error': 'Not found'}
+
+def test_get_correct_range(client):
+    data = {'minimum': 1, 'maximum': 5, 'correct': 3}
+    posted = client.post('/range', content_type = 'application/json', data = json.dumps(data))
+    received = client.get('/range')
+    assert received.status_code == 200
+    assert json.loads(received.data) == {"maximum": 5, "minimum": 1 }
+
